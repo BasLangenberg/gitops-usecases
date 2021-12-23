@@ -3,12 +3,12 @@
 provision: init apply
 
 init:
-	cd infra && terraform init
+	cd terraform && terraform init
 
 apply:
-	cd infra && terraform apply --auto-approve
+	cd terraform && terraform apply --auto-approve
 
 destroy:
-	cd infra && terraform destroy --auto-approve
+	cd terraform && terraform destroy --auto-approve
 
 .DEFAULT_GOAL := provision

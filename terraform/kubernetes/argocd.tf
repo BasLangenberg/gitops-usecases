@@ -1,55 +1,10 @@
-# Create private docker repository
-
-# Create management cluster resources
-
-## Cluster
-resource "digitalocean_kubernetes_cluster" "mgmt" {
-  name    = "k8s-mgmt"
-  region  = "ams3"
-  version = "1.21.5-do.0"
-
-  node_pool {
-    name       = "autoscale-worker-pool"
-    size       = "s-2vcpu-2gb"
-    auto_scale = true
-    min_nodes  = 1
-    max_nodes  = 5
-    tags = ["k8s-mgmt-nodes"]
-  }
-}
-
-## Load Balancer
-resource "digitalocean_loadbalancer" "mgmt" {
-  name   = "lb-mgmt"
-  region = "nyc3"
-
-  forwarding_rule {
-    entry_port     = 443
-    entry_protocol = "https"
-
-    target_port     = 443
-    target_protocol = "https"
-    tls_passthrough = true
-  }
-
-  healthcheck {
-    port     = 80
-    path     = "/health"
-    protocol = "http"
-  }
-
-  droplet_tag = "k8s-mgmt-nodes"
-}
-
 ## Mgmt k8s cluster config
 
 provider "kubernetes" {
   alias = "mgmt"
-  host             = digitalocean_kubernetes_cluster.mgmt.endpoint
-  token            = digitalocean_kubernetes_cluster.mgmt.kube_config[0].token
-  cluster_ca_certificate = base64decode(
-    digitalocean_kubernetes_cluster.mgmt.kube_config[0].cluster_ca_certificate
-  )
+  host             = var.endpoint
+  token            = var.token
+  cluster_ca_certificate = var.ca_certificate
 }
 
 ## Argo namespace
@@ -65,6 +20,9 @@ resource "kubernetes_namespace" "argocd" {
 ## curl https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml | tfk8s --strip
 
 resource "kubernetes_manifest" "argocd_crds" {
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
   provider = kubernetes.mgmt
   manifest = {
     "apiVersion" = "apiextensions.k8s.io/v1"
@@ -2615,6 +2573,9 @@ resource "kubernetes_manifest" "argocd_crds" {
 }
 
 resource "kubernetes_manifest" "customresourcedefinition_appprojects_argoproj_io" {
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
   provider = kubernetes.mgmt
   manifest = {
     "apiVersion" = "apiextensions.k8s.io/v1"
@@ -2988,6 +2949,9 @@ resource "kubernetes_manifest" "customresourcedefinition_appprojects_argoproj_io
 }
 
 resource "kubernetes_manifest" "serviceaccount_argocd_application_controller" {
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
   provider = kubernetes.mgmt
   manifest = {
     "apiVersion" = "v1"
@@ -3005,6 +2969,9 @@ resource "kubernetes_manifest" "serviceaccount_argocd_application_controller" {
 }
 
 resource "kubernetes_manifest" "serviceaccount_argocd_dex_server" {
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
   provider = kubernetes.mgmt
   manifest = {
     "apiVersion" = "v1"
@@ -3022,6 +2989,9 @@ resource "kubernetes_manifest" "serviceaccount_argocd_dex_server" {
 }
 
 resource "kubernetes_manifest" "serviceaccount_argocd_redis" {
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
   provider = kubernetes.mgmt
   manifest = {
     "apiVersion" = "v1"
@@ -3039,6 +3009,9 @@ resource "kubernetes_manifest" "serviceaccount_argocd_redis" {
 }
 
 resource "kubernetes_manifest" "serviceaccount_argocd_server" {
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
   provider = kubernetes.mgmt
   manifest = {
     "apiVersion" = "v1"
@@ -3056,6 +3029,9 @@ resource "kubernetes_manifest" "serviceaccount_argocd_server" {
 }
 
 resource "kubernetes_manifest" "role_argocd_application_controller" {
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
   provider = kubernetes.mgmt
   manifest = {
     "apiVersion" = "rbac.authorization.k8s.io/v1"
@@ -3119,6 +3095,9 @@ resource "kubernetes_manifest" "role_argocd_application_controller" {
 }
 
 resource "kubernetes_manifest" "role_argocd_dex_server" {
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
   provider = kubernetes.mgmt
   manifest = {
     "apiVersion" = "rbac.authorization.k8s.io/v1"
@@ -3152,6 +3131,9 @@ resource "kubernetes_manifest" "role_argocd_dex_server" {
 }
 
 resource "kubernetes_manifest" "role_argocd_server" {
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
   provider = kubernetes.mgmt
   manifest = {
     "apiVersion" = "rbac.authorization.k8s.io/v1"
@@ -3219,6 +3201,9 @@ resource "kubernetes_manifest" "role_argocd_server" {
 }
 
 resource "kubernetes_manifest" "clusterrole_argocd_application_controller" {
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
   provider = kubernetes.mgmt
   manifest = {
     "apiVersion" = "rbac.authorization.k8s.io/v1"
@@ -3256,6 +3241,9 @@ resource "kubernetes_manifest" "clusterrole_argocd_application_controller" {
 }
 
 resource "kubernetes_manifest" "clusterrole_argocd_server" {
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
   provider = kubernetes.mgmt
   manifest = {
     "apiVersion" = "rbac.authorization.k8s.io/v1"
@@ -3310,6 +3298,9 @@ resource "kubernetes_manifest" "clusterrole_argocd_server" {
 }
 
 resource "kubernetes_manifest" "rolebinding_argocd_application_controller" {
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
   provider = kubernetes.mgmt
   manifest = {
     "apiVersion" = "rbac.authorization.k8s.io/v1"
@@ -3338,6 +3329,9 @@ resource "kubernetes_manifest" "rolebinding_argocd_application_controller" {
 }
 
 resource "kubernetes_manifest" "rolebinding_argocd_dex_server" {
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
   provider = kubernetes.mgmt
   manifest = {
     "apiVersion" = "rbac.authorization.k8s.io/v1"
@@ -3366,6 +3360,9 @@ resource "kubernetes_manifest" "rolebinding_argocd_dex_server" {
 }
 
 resource "kubernetes_manifest" "rolebinding_argocd_redis" {
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
   provider = kubernetes.mgmt
   manifest = {
     "apiVersion" = "rbac.authorization.k8s.io/v1"
@@ -3394,6 +3391,9 @@ resource "kubernetes_manifest" "rolebinding_argocd_redis" {
 }
 
 resource "kubernetes_manifest" "rolebinding_argocd_server" {
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
   provider = kubernetes.mgmt
   manifest = {
     "apiVersion" = "rbac.authorization.k8s.io/v1"
@@ -3422,6 +3422,9 @@ resource "kubernetes_manifest" "rolebinding_argocd_server" {
 }
 
 resource "kubernetes_manifest" "clusterrolebinding_argocd_application_controller" {
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
   provider = kubernetes.mgmt
   manifest = {
     "apiVersion" = "rbac.authorization.k8s.io/v1"
@@ -3450,6 +3453,9 @@ resource "kubernetes_manifest" "clusterrolebinding_argocd_application_controller
 }
 
 resource "kubernetes_manifest" "clusterrolebinding_argocd_server" {
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
   provider = kubernetes.mgmt
   manifest = {
     "apiVersion" = "rbac.authorization.k8s.io/v1"
@@ -3478,6 +3484,9 @@ resource "kubernetes_manifest" "clusterrolebinding_argocd_server" {
 }
 
 resource "kubernetes_manifest" "configmap_argocd_cm" {
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
   provider = kubernetes.mgmt
   manifest = {
     "apiVersion" = "v1"
@@ -3494,6 +3503,9 @@ resource "kubernetes_manifest" "configmap_argocd_cm" {
 }
 
 resource "kubernetes_manifest" "configmap_argocd_cmd_params_cm" {
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
   provider = kubernetes.mgmt
   manifest = {
     "apiVersion" = "v1"
@@ -3510,6 +3522,9 @@ resource "kubernetes_manifest" "configmap_argocd_cmd_params_cm" {
 }
 
 resource "kubernetes_manifest" "configmap_argocd_gpg_keys_cm" {
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
   provider = kubernetes.mgmt
   manifest = {
     "apiVersion" = "v1"
@@ -3526,6 +3541,9 @@ resource "kubernetes_manifest" "configmap_argocd_gpg_keys_cm" {
 }
 
 resource "kubernetes_manifest" "configmap_argocd_rbac_cm" {
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
   provider = kubernetes.mgmt
   manifest = {
     "apiVersion" = "v1"
@@ -3542,6 +3560,9 @@ resource "kubernetes_manifest" "configmap_argocd_rbac_cm" {
 }
 
 resource "kubernetes_manifest" "configmap_argocd_ssh_known_hosts_cm" {
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
   provider = kubernetes.mgmt
   manifest = {
     "apiVersion" = "v1"
@@ -3571,6 +3592,9 @@ resource "kubernetes_manifest" "configmap_argocd_ssh_known_hosts_cm" {
 }
 
 resource "kubernetes_manifest" "configmap_argocd_tls_certs_cm" {
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
   provider = kubernetes.mgmt
   manifest = {
     "apiVersion" = "v1"
@@ -3588,6 +3612,9 @@ resource "kubernetes_manifest" "configmap_argocd_tls_certs_cm" {
 }
 
 resource "kubernetes_manifest" "secret_argocd_secret" {
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
   provider = kubernetes.mgmt
   manifest = {
     "apiVersion" = "v1"
@@ -3605,6 +3632,9 @@ resource "kubernetes_manifest" "secret_argocd_secret" {
 }
 
 resource "kubernetes_manifest" "service_argocd_dex_server" {
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
   provider = kubernetes.mgmt
   manifest = {
     "apiVersion" = "v1"
@@ -3647,6 +3677,9 @@ resource "kubernetes_manifest" "service_argocd_dex_server" {
 }
 
 resource "kubernetes_manifest" "service_argocd_metrics" {
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
   provider = kubernetes.mgmt
   manifest = {
     "apiVersion" = "v1"
@@ -3677,6 +3710,9 @@ resource "kubernetes_manifest" "service_argocd_metrics" {
 }
 
 resource "kubernetes_manifest" "service_argocd_redis" {
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
   provider = kubernetes.mgmt
   manifest = {
     "apiVersion" = "v1"
@@ -3706,6 +3742,9 @@ resource "kubernetes_manifest" "service_argocd_redis" {
 }
 
 resource "kubernetes_manifest" "service_argocd_repo_server" {
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
   provider = kubernetes.mgmt
   manifest = {
     "apiVersion" = "v1"
@@ -3742,6 +3781,9 @@ resource "kubernetes_manifest" "service_argocd_repo_server" {
 }
 
 resource "kubernetes_manifest" "service_argocd_server" {
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
   provider = kubernetes.mgmt
   manifest = {
     "apiVersion" = "v1"
@@ -3778,6 +3820,9 @@ resource "kubernetes_manifest" "service_argocd_server" {
 }
 
 resource "kubernetes_manifest" "service_argocd_server_metrics" {
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
   provider = kubernetes.mgmt
   manifest = {
     "apiVersion" = "v1"
@@ -3808,6 +3853,9 @@ resource "kubernetes_manifest" "service_argocd_server_metrics" {
 }
 
 resource "kubernetes_manifest" "deployment_argocd_dex_server" {
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
   provider = kubernetes.mgmt
   manifest = {
     "apiVersion" = "apps/v1"
@@ -3929,6 +3977,9 @@ resource "kubernetes_manifest" "deployment_argocd_dex_server" {
 }
 
 resource "kubernetes_manifest" "deployment_argocd_redis" {
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
   provider = kubernetes.mgmt
   manifest = {
     "apiVersion" = "apps/v1"
@@ -4013,6 +4064,9 @@ resource "kubernetes_manifest" "deployment_argocd_redis" {
 }
 
 resource "kubernetes_manifest" "deployment_argocd_repo_server" {
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
   provider = kubernetes.mgmt
   manifest = {
     "apiVersion" = "apps/v1"
@@ -4370,6 +4424,9 @@ resource "kubernetes_manifest" "deployment_argocd_repo_server" {
 }
 
 resource "kubernetes_manifest" "deployment_argocd_server" {
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
   provider = kubernetes.mgmt
   manifest = {
     "apiVersion" = "apps/v1"
@@ -4797,6 +4854,9 @@ resource "kubernetes_manifest" "deployment_argocd_server" {
 }
 
 resource "kubernetes_manifest" "statefulset_argocd_application_controller" {
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
   provider = kubernetes.mgmt
   manifest = {
     "apiVersion" = "apps/v1"
@@ -5092,6 +5152,9 @@ resource "kubernetes_manifest" "statefulset_argocd_application_controller" {
 }
 
 resource "kubernetes_manifest" "networkpolicy_argocd_application_controller_network_policy" {
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
   provider = kubernetes.mgmt
   manifest = {
     "apiVersion" = "networking.k8s.io/v1"
@@ -5128,6 +5191,9 @@ resource "kubernetes_manifest" "networkpolicy_argocd_application_controller_netw
 }
 
 resource "kubernetes_manifest" "networkpolicy_argocd_dex_server_network_policy" {
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
   provider = kubernetes.mgmt
   manifest = {
     "apiVersion" = "networking.k8s.io/v1"
@@ -5186,6 +5252,9 @@ resource "kubernetes_manifest" "networkpolicy_argocd_dex_server_network_policy" 
 }
 
 resource "kubernetes_manifest" "networkpolicy_argocd_redis_network_policy" {
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
   provider = kubernetes.mgmt
   manifest = {
     "apiVersion" = "networking.k8s.io/v1"
@@ -5241,6 +5310,9 @@ resource "kubernetes_manifest" "networkpolicy_argocd_redis_network_policy" {
 }
 
 resource "kubernetes_manifest" "networkpolicy_argocd_repo_server_network_policy" {
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
   provider = kubernetes.mgmt
   manifest = {
     "apiVersion" = "networking.k8s.io/v1"
@@ -5308,6 +5380,9 @@ resource "kubernetes_manifest" "networkpolicy_argocd_repo_server_network_policy"
 }
 
 resource "kubernetes_manifest" "networkpolicy_argocd_server_network_policy" {
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
   provider = kubernetes.mgmt
   manifest = {
     "apiVersion" = "networking.k8s.io/v1"
@@ -5331,6 +5406,3 @@ resource "kubernetes_manifest" "networkpolicy_argocd_server_network_policy" {
     }
   }
 }
-
-# Create development cluster
-# Create production clusterresource "kubernetes_manifest" "customresourcedefinition_applications_argoproj_io" {
