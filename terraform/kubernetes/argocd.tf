@@ -1,10 +1,15 @@
 ## Mgmt k8s cluster config
+data "digitalocean_kubernetes_cluster" "mgmt" {
+  name = "k8s-mgmt"
+}
 
 provider "kubernetes" {
   alias = "mgmt"
-  host             = var.endpoint
-  token            = var.token
-  cluster_ca_certificate = var.ca_certificate
+  host             = data.digitalocean_kubernetes_cluster.mgmt.endpoint
+  token            = data.digitalocean_kubernetes_cluster.mgmt.kube_config[0].token
+  cluster_ca_certificate = base64decode(
+    data.digitalocean_kubernetes_cluster.mgmt.kube_config[0].cluster_ca_certificate
+  )
 }
 
 ## Argo namespace

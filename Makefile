@@ -1,14 +1,21 @@
 .PHONY: init provision destroy apply
 
-provision: init apply
+provision: init-infra apply-infra init-k8s apply-k8s
 
-init:
-	cd terraform && terraform init
+init-infra:
+	cd terraform/infrastructure && terraform init
 
-apply:
-	cd terraform && terraform apply --auto-approve
+init-k8s:
+	cd terraform/kubernetes && terraform init
+
+apply-infra:
+	cd terraform/infrastructure && terraform apply --auto-approve
+
+apply-k8s:
+	cd terraform/kubernetes && terraform apply --auto-approve
 
 destroy:
-	cd terraform && terraform destroy --auto-approve
+	cd terraform/kubernetes && terraform destroy --auto-approve
+	cd terraform/infrastructure && terraform destroy --auto-approve
 
 .DEFAULT_GOAL := provision
