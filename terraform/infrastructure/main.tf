@@ -21,7 +21,7 @@ resource "digitalocean_kubernetes_cluster" "mgmt" {
 ## Load Balancer
 resource "digitalocean_loadbalancer" "mgmt" {
   name   = "lb-mgmt"
-  region = "nyc3"
+  region = "ams3"
 
   forwarding_rule {
     entry_port     = 443
@@ -41,6 +41,17 @@ resource "digitalocean_loadbalancer" "mgmt" {
   droplet_tag = "k8s-mgmt-nodes"
 }
 
+## DNS Setup
+data "digitalocean_domain" "homecooked" {
+  name = "homecooked.nl"
+}
+
+resource "digitalocean_record" "argo" {
+  domain = data.digitalocean_domain.homecooked.name
+  type   = "A"
+  name   = "argo"
+  value  = digitalocean_loadbalancer.mgmt.ip
+}
 
 # Create development cluster
 # Create production clusterresource

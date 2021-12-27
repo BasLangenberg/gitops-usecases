@@ -5411,3 +5411,56 @@ resource "kubernetes_manifest" "networkpolicy_argocd_server_network_policy" {
     }
   }
 }
+
+resource "kubernetes_manifest" "ingress_argocd_argocd_server_ingress" {
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
+  provider = kubernetes.mgmt
+  manifest = {
+    "apiVersion" = "networking.k8s.io/v1"
+    "kind" = "Ingress"
+    "metadata" = {
+      "annotations" = {
+        "cert-manager.io/cluster-issuer" = "letsencrypt-prod"
+        "kubernetes.io/ingress.class" = "nginx"
+        "kubernetes.io/tls-acme" = "true"
+        "nginx.ingress.kubernetes.io/backend-protocol" = "HTTPS"
+        "nginx.ingress.kubernetes.io/ssl-passthrough" = "true"
+      }
+      "name" = "argocd-server-ingress"
+      "namespace" = "argocd"
+    }
+    "spec" = {
+      "rules" = [
+        {
+          "host" = "argocd.example.com"
+          "http" = {
+            "paths" = [
+              {
+                "backend" = {
+                  "service" = {
+                    "name" = "argocd-server"
+                    "port" = {
+                      "name" = "https"
+                    }
+                  }
+                }
+                "path" = "/"
+                "pathType" = "Prefix"
+              },
+            ]
+          }
+        },
+      ]
+      "tls" = [
+        {
+          "hosts" = [
+            "argo.homecooked.nl",
+          ]
+          "secretName" = "argocd-secret"
+        },
+      ]
+    }
+  }
+}
