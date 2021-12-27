@@ -27,6 +27,7 @@ Requirements:
   - If you spent 25 dollars with them, I'll get 25 dollars in credit as well, without it costing you anything extra
 - [Terraform 1.1](https://terraform.io)
 - [Kubectl](https://kubernetes.io/docs/tasks/tools/)
+- [Kustomize](https://kubernetes.io/docs/tasks/tools/)
 
 Not required, but helpfull:
 

@@ -1,0 +1,3 @@
+- op: add
+  path: /metadata/annotations/service.beta.kubernetes.io~1do-loadbalancer-name
+  value: lb-mgmt

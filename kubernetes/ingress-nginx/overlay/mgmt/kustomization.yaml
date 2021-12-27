@@ -1,0 +1,9 @@
+resources:
+  - ../../base
+
+patchesJson6902:
+  - path: loadbalancer.yaml
+    target:
+      version: v1
+      kind: Service
+      name: ingress-nginx-controller
