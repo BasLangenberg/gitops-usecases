@@ -19,26 +19,18 @@ resource "digitalocean_kubernetes_cluster" "mgmt" {
 }
 
 ## Load Balancer
+### We create it here so it can be queried later,
+### All config is left to the ingress controller!
 resource "digitalocean_loadbalancer" "mgmt" {
   name   = "lb-mgmt"
   region = "ams3"
-
   forwarding_rule {
-    entry_port     = 443
-    entry_protocol = "https"
-
-    target_port     = 443
-    target_protocol = "https"
-    tls_passthrough = true
-  }
-
-  healthcheck {
-    port     = 80
-    path     = "/health"
-    protocol = "http"
-  }
-
-  droplet_tag = "k8s-mgmt-nodes"
+          entry_port       = 443
+          entry_protocol   = "https"
+          target_port      = 443
+          target_protocol  = "https"
+          tls_passthrough  = true
+        }
 }
 
 ## DNS Setup

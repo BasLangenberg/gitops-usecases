@@ -12,6 +12,7 @@ k8s-resources:
 	doctl kubernetes cluster kubeconfig save k8s-mgmt
 	kustomize build kubernetes/ingress-nginx/overlay/mgmt | kubectl apply -f -
 	kubectl apply -f kubernetes/argocd/namespace.yaml
+	sleep 10
 	kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
 destroy:
