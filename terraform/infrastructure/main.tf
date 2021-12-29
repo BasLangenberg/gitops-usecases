@@ -21,16 +21,34 @@ resource "digitalocean_kubernetes_cluster" "mgmt" {
 ## Load Balancer
 ### We create it here so it can be queried later,
 ### All config is left to the ingress controller!
+### Changes to this resource will be suppressed by the lifecycle directive
 resource "digitalocean_loadbalancer" "mgmt" {
   name   = "lb-mgmt"
   region = "ams3"
+  enable_proxy_protocol            = true
   forwarding_rule {
-          entry_port       = 443
-          entry_protocol   = "https"
-          target_port      = 443
-          target_protocol  = "https"
-          tls_passthrough  = true
-        }
+    entry_port      = 443
+    entry_protocol  = "tcp"
+    target_port     = 31575
+    target_protocol = "tcp"
+    tls_passthrough = false
+  }
+
+  forwarding_rule {
+    entry_port      = 80
+    entry_protocol  = "tcp"
+    target_port     = 30632
+    target_protocol = "tcp"
+    tls_passthrough = false
+  }
+
+  lifecycle {    
+    ignore_changes = [
+      # Ignore changes to tags, e.g. because a management agent      
+      # updates these based on some ruleset managed elsewhere.      
+      forwarding_rule,    
+    ]  
+  }
 }
 
 ## DNS Setup

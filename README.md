@@ -28,7 +28,17 @@ Requirements:
 - [Terraform 1.1](https://terraform.io)
 - [Kubectl](https://kubernetes.io/docs/tasks/tools/)
 - [Kustomize](https://kubernetes.io/docs/tasks/tools/)
-
-Not required, but helpfull:
-
 - [doctl](https://github.com/digitalocean/doctl)
+- A domain, setup in DigitalOcean for DNS
+
+## How to use?
+
+Export DIGITALOCEAN_TOKEN, run ```make```
+
+You need to make some changes. This repo expects a domain is already setup, which is my own domain (homecooked.nl) in this case. This is required fot 
+
+## References
+
+https://medium.com/dzerolabs/using-tekton-and-argocd-to-set-up-a-kubernetes-native-build-release-pipeline-cf4f4d9972b0
+
+

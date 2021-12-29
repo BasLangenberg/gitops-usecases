@@ -11,9 +11,12 @@ apply-infra:
 k8s-resources:
 	doctl kubernetes cluster kubeconfig save k8s-mgmt
 	kustomize build kubernetes/ingress-nginx/overlay/mgmt | kubectl apply -f -
+	sleep 30
 	kubectl apply -f kubernetes/argocd/namespace.yaml
-	sleep 10
 	kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+	kubectl apply --filename https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml	
+	sleep 30
+	kubectl apply --filename https://storage.googleapis.com/tekton-releases/triggers/latest/release.yaml
 
 destroy:
 	cd terraform/infrastructure && terraform destroy --auto-approve
