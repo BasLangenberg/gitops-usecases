@@ -29,6 +29,7 @@ Requirements:
 - [Kubectl](https://kubernetes.io/docs/tasks/tools/)
 - [Kustomize](https://kubernetes.io/docs/tasks/tools/)
 - [doctl](https://github.com/digitalocean/doctl)
+- [argocd client tools](https://argo-cd.readthedocs.io/en/stable/cli_installation/)
 - A domain, setup in DigitalOcean for DNS
 
 ## How to use?
@@ -41,4 +42,8 @@ You need to make some changes. This repo expects a domain is already setup, whic
 
 https://medium.com/dzerolabs/using-tekton-and-argocd-to-set-up-a-kubernetes-native-build-release-pipeline-cf4f4d9972b0
 
+https://www.youtube.com/watch?v=7mvrpxz_BfE
 
+https://ibm.github.io/tekton-tutorial-openshift/lab1
+
+https://github.com/digitalocean/csi-digitalocean/blob/master/examples/kubernetes/pod-single-existing-volume/README.md

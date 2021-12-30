@@ -1,4 +1,8 @@
 # Create private docker repository
+resource "digitalocean_container_registry" "bl-k8s" {
+  name                   = "bl-k8s"
+  subscription_tier_slug = "starter"
+}
 
 # Create management cluster resources
 
@@ -61,6 +65,22 @@ resource "digitalocean_record" "argo" {
   type   = "A"
   name   = "argo"
   value  = digitalocean_loadbalancer.mgmt.ip
+}
+
+resource "digitalocean_record" "ingress-2048" {
+  domain = data.digitalocean_domain.homecooked.name
+  type   = "A"
+  name   = "2048"
+  value  = digitalocean_loadbalancer.mgmt.ip
+}
+
+## Storage
+resource "digitalocean_volume" "mgmt-pv" {
+  region                  = "ams3"
+  name                    = "mgmt-pv"
+  size                    = 100
+  initial_filesystem_type = "ext4"
+  description             = "Physical Volume for mgmt-k8s cluster"
 }
 
 # Create development cluster

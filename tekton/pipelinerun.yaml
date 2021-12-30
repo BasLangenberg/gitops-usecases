@@ -1,0 +1,22 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: fakeservice-pipelinerun-
+spec:
+  pipelineRef:
+    name: build-and-deploy-pipeline
+  params:
+    - name: gitUrl
+      value: https://github.com/BasLangenberg/tekton-pipeline-example-app
+    - name: imageUrl
+      value: registry.digitalocean.com/bl-k8s/2048
+    - name: imageTag
+      value: initial-build-v1
+  serviceAccountName: pipeline-account
+  workspaces:
+    - name: git-source
+      persistentVolumeClaim:
+        claimName: fakeservice-source-pvc
+    - name: dockerconfig
+      secret:
+        secretName: docker-cfg
