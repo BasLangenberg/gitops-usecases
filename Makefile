@@ -43,4 +43,7 @@ argo-pass:
 argo-demo-app:
 	argocd app create 2048-game-app --repo https://github.com/BasLangenberg/tekton-pipeline-example-app --path kustomize --dest-server https://kubernetes.default.svc --dest-namespace default --sync-option CreateNamespace=false
 
+argo-syncwaves-app:
+	argocd app create syncwaves --repo https://github.com/argoproj/argocd-example-apps --path sync-waves --dest-server https://kubernetes.default.svc --dest-namespace default --sync-option CreateNamespace=false
+
 .DEFAULT_GOAL := provision

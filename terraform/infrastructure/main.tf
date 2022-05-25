@@ -10,7 +10,7 @@ resource "digitalocean_container_registry" "bl-k8s" {
 resource "digitalocean_kubernetes_cluster" "mgmt" {
   name    = "k8s-mgmt"
   region  = "ams3"
-  version = "1.21.5-do.0"
+  version = "1.22.8-do.1"
 
   node_pool {
     name       = "autoscale-worker-pool"
@@ -18,7 +18,7 @@ resource "digitalocean_kubernetes_cluster" "mgmt" {
     auto_scale = true
     min_nodes  = 1
     max_nodes  = 5
-    tags = ["k8s-mgmt-nodes"]
+    tags       = ["k8s-mgmt-nodes"]
   }
 }
 
@@ -27,9 +27,9 @@ resource "digitalocean_kubernetes_cluster" "mgmt" {
 ### All config is left to the ingress controller!
 ### Changes to this resource will be suppressed by the lifecycle directive
 resource "digitalocean_loadbalancer" "mgmt" {
-  name   = "lb-mgmt"
-  region = "ams3"
-  enable_proxy_protocol            = true
+  name                  = "lb-mgmt"
+  region                = "ams3"
+  enable_proxy_protocol = true
   forwarding_rule {
     entry_port      = 443
     entry_protocol  = "tcp"
@@ -46,12 +46,12 @@ resource "digitalocean_loadbalancer" "mgmt" {
     tls_passthrough = false
   }
 
-  lifecycle {    
+  lifecycle {
     ignore_changes = [
       # Ignore changes to tags, e.g. because a management agent      
       # updates these based on some ruleset managed elsewhere.      
-      forwarding_rule,    
-    ]  
+      forwarding_rule,
+    ]
   }
 }
 
