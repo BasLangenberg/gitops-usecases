@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kube-prometheus-stack
+  namespace: argocd
+spec:
+  project: default
+  source:
+    chart: kube-prometheus-stack
+    repoURL: https://prometheus-community.github.io/helm-charts
+    targetRevision: 35.3.1
+    helm:
+      releaseName: kube-prometheus-stack
+      skipCrds: true
+      parameters:
+      - name: grafana.ingress.enabled
+        value: "true"
+      - name: grafana.ingress.ingressClassname
+        value: "nginx"
+      - name: grafana.ingress.hosts
+        value: "[grafana.homecooked.nl]"
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: default
